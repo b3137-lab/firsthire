@@ -313,13 +313,42 @@
   }
 
   // Animate from 0 on page load (uses fallback values until fetch returns)
-  animCount(document.getElementById('c-students'), 214, 1800);
-  animCount(document.getElementById('c-startups'), 7, 1400);
-  animCount(document.getElementById('c-roles'), 23, 1600);
+  (async function(){
+  const COUNTS_URL = 'https://script.google.com/macros/s/AKfycbyHNlagxTtn-Vl3D6FVMr9Dwr9zwQVPbUju_J560rs-KiHCzKIivgp1ZwM3ihiT49TE/exec';
 
-  // Fetch real data after animation completes, then every 5 mins
-  setTimeout(updateTickers, 2000);
-  setInterval(updateTickers, 300000);
+  function animCount(el, to, dur){
+    let s = null;
+    function step(ts){
+      if(!s) s = ts;
+      const t = Math.min((ts-s)/dur, 1), e = 1-Math.pow(1-t, 3);
+      el.textContent = Math.round(to*e);
+      if(t<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  async function loadCounts(){
+    try {
+      const res = await fetch(COUNTS_URL);
+      const data = await res.json();
+
+      animCount(document.getElementById('c-students'), data.students, 1800);
+      animCount(document.getElementById('c-startups'), data.startups, 1400);
+      animCount(document.getElementById('c-roles'), data.roles, 1600);
+
+      document.getElementById('t-students').textContent =
+        Math.min(5, data.students) + ' joined recently';
+
+      document.getElementById('t-startups').textContent =
+        data.startups + ' confirmed so far';
+
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  loadCounts();
+  setInterval(loadCounts, 300000);
 })();
 </script>
 </body>
