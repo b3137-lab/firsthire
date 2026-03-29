@@ -282,31 +282,44 @@
   document.querySelectorAll('.feature-card, .perk-item, .stat').forEach(el => observer.observe(el));
   // Live counters
 (function(){
-  const S_BASE=214, ST_BASE=7, R_BASE=23;
-  function animCount(el,to,dur){
-    let s=null;
+  const COUNTS_URL = 'https://script.google.com/macros/s/AKfycbyHNlagxTtn-Vl3D6FVMr9Dwr9zwQVPbUju_J560rs-KiHCzKIivgp1ZwM3ihiT49TE/exec'; // ← paste your URL here
+
+  function animCount(el, to, dur){
+    let s = null;
     function step(ts){
-      if(!s)s=ts;
-      const t=Math.min((ts-s)/dur,1),e=1-Math.pow(1-t,3);
-      el.textContent=Math.round(to*e);
-      if(t<1)requestAnimationFrame(step);
+      if(!s) s = ts;
+      const t = Math.min((ts-s)/dur, 1), e = 1-Math.pow(1-t, 3);
+      el.textContent = Math.round(to*e);
+      if(t<1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
-  function updateTickers(){
-    const hf=(Date.now()%3600000)/3600000;
-    const df=(Date.now()%86400000)/86400000;
-    document.getElementById('c-students').textContent=S_BASE+Math.floor(df*12);
-    document.getElementById('c-startups').textContent=ST_BASE+Math.floor(df*2);
-    document.getElementById('c-roles').textContent=R_BASE+Math.floor(df*5);
-    document.getElementById('t-students').textContent=(1+Math.floor(hf*5))+' joined in the last hour';
-    document.getElementById('t-startups').textContent=(Math.floor(df*2)+1)+' new this week';
+
+  async function updateTickers(){
+    try {
+      const res = await fetch(COUNTS_URL);
+      const data = await res.json();
+      document.getElementById('c-students').textContent = data.students;
+      document.getElementById('c-startups').textContent = data.startups;
+      document.getElementById('c-roles').textContent = data.roles;
+      const hf = (Date.now() % 3600000) / 3600000;
+      document.getElementById('t-students').textContent =
+        (1 + Math.floor(hf * 5)) + ' joined in the last hour';
+      document.getElementById('t-startups').textContent =
+        data.startups + ' confirmed so far';
+    } catch(e) {
+      // keeps showing animated values if fetch fails
+    }
   }
-  animCount(document.getElementById('c-students'),S_BASE,1800);
-  animCount(document.getElementById('c-startups'),ST_BASE,1400);
-  animCount(document.getElementById('c-roles'),R_BASE,1600);
-  setTimeout(updateTickers,2000);
-  setInterval(updateTickers,60000);
+
+  // Animate from 0 on page load (uses fallback values until fetch returns)
+  animCount(document.getElementById('c-students'), 214, 1800);
+  animCount(document.getElementById('c-startups'), 7, 1400);
+  animCount(document.getElementById('c-roles'), 23, 1600);
+
+  // Fetch real data after animation completes, then every 5 mins
+  setTimeout(updateTickers, 2000);
+  setInterval(updateTickers, 300000);
 })();
 </script>
 </body>
