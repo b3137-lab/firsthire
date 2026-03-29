@@ -164,15 +164,15 @@
   <div class="counter-grid">
     <div class="counter-card">
       <div class="cc-label">Students &amp; Freshers</div>
-      <div class="cc-number"><span id="c-students">0</span><span class="cc-suffix">+</span></div>
+      <div class="cc-number"><span id="c-students"></span><span class="cc-suffix">+</span></div>
       <div class="cc-desc">Signed up &amp; waiting for their first real role</div>
-      <div class="cc-ticker"><span class="tick-dot"></span><span id="t-students">4 joined in the last hour</span></div>
+      <div class="cc-ticker"><span class="tick-dot"></span><span id="t-students"></span></div>
     </div>
     <div class="counter-card">
       <div class="cc-label">Startups On Board</div>
-      <div class="cc-number"><span id="c-startups">0</span><span class="cc-suffix">+</span></div>
+      <div class="cc-number"><span id="c-startups"></span><span class="cc-suffix">+</span></div>
       <div class="cc-desc">Funded startups actively ready to hire</div>
-      <div class="cc-ticker"><span class="tick-dot"></span><span id="t-startups">2 new this week</span></div>
+      <div class="cc-ticker"><span class="tick-dot"></span><span id="t-startups"></span></div>
     </div>
     <div class="counter-card accent">
       <div class="cc-label">Open Positions</div>
@@ -289,7 +289,8 @@
     let s = null;
     function step(ts){
       if(!s) s = ts;
-      const t = Math.min((ts-s)/dur, 1), e = 1-Math.pow(1-t, 3);
+      const t = Math.min((ts-s)/dur, 1);
+      const e = 1 - Math.pow(1-t, 3);
       el.textContent = Math.round(to*e);
       if(t<1) requestAnimationFrame(step);
     }
@@ -301,28 +302,22 @@
       const res = await fetch(COUNTS_URL);
       const data = await res.json();
 
-      // Update numbers
+      // Animate numbers AFTER data is fetched
       animCount(document.getElementById('c-students'), data.students, 800);
       animCount(document.getElementById('c-startups'), data.startups, 800);
       animCount(document.getElementById('c-roles'), data.roles, 800);
 
-      // Update dynamic messages
+      // Dynamic messages
       document.getElementById('t-students').textContent = `${data.students} joined recently`;
       document.getElementById('t-startups').textContent = `${data.startups} confirmed so far`;
-      document.getElementById('t-roles').textContent = `Avg. 48hr founder response`; // optional, keep static if desired
-
-    } catch(e) {
+      document.getElementById('t-roles').textContent = `Avg. 48hr founder response`;
+    } catch(e){
       console.error('Error fetching counters:', e);
     }
   }
 
-  // Initial animation
-  animCount(document.getElementById('c-students'), 0, 0); // start from 0, animate instantly
-  animCount(document.getElementById('c-startups'), 0, 0);
-  animCount(document.getElementById('c-roles'), 0, 0);
-
-  // Update tickers after page load
-  setTimeout(updateTickers, 1000);
+  // Remove any initial animCount calls that ran before fetch
+  updateTickers();           // fetch and animate immediately
   setInterval(updateTickers, 300000); // refresh every 5 minutes
 })();
 </script>
