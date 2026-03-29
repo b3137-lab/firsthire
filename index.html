@@ -302,9 +302,9 @@
       const data = await res.json();
 
       // Update numbers
-      document.getElementById('c-students').textContent = data.students;
-      document.getElementById('c-startups').textContent = data.startups;
-      document.getElementById('c-roles').textContent = data.roles;
+      animCount(document.getElementById('c-students'), data.students, 800);
+      animCount(document.getElementById('c-startups'), data.startups, 800);
+      animCount(document.getElementById('c-roles'), data.roles, 800);
 
       // Update dynamic messages
       document.getElementById('t-students').textContent = `${data.students} joined recently`;
